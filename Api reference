@@ -1,0 +1,86 @@
+# API_REFERENCE - Comarca Ventas (v1)
+Base URL: https://api.comarcaventas.example.com/v1
+
+## Auth
+### POST /auth/signup
+Body:
+{
+  "name": "string",
+  "email": "string",
+  "phone": "string",
+  "password": "string",
+  "provider": "email|google|facebook|instagram|phone"
+}
+Response: 201 Created
+{ "user": {...}, "access_token": "...", "refresh_token": "..." }
+
+### POST /auth/login
+Body:
+{ "email": "string", "password": "string" }
+Response:
+{ "access_token": "...", "refresh_token": "...", "user": {...} }
+
+### POST /auth/refresh
+Body:
+{ "refresh_token": "string" }
+Response:
+{ "access_token": "...", "refresh_token": "..." }
+
+### POST /auth/phone/send-otp
+Body:
+{ "phone": "string" }
+
+### POST /auth/phone/verify-otp
+Body:
+{ "phone": "string", "code": "123456" }
+
+## Users
+- GET /users/me
+- PUT /users/me
+- GET /users/:id
+
+## Products
+- POST /products
+  - multipart/form-data; fields: title, description, price_cents, currency, stock, condition, category_id, location
+  - images: uploaded to /uploads or presigned S3 URL
+- GET /products
+  - Query params: q, category, minPrice, maxPrice, condition, page, limit, near (lat,lng), radius
+- GET /products/:id
+- PUT /products/:id
+- DELETE /products/:id
+
+## Uploads
+- POST /uploads
+  - Returns presigned URL or accepts multipart
+
+## Orders & Payments
+- POST /orders
+  - body: { cart: [{product_id, qty}], shipping_info, payment_method }
+- GET /orders/:id
+- POST /payments/webhook
+  - Receive provider webhook events (MercadoPago/Stripe)
+
+## Cart
+- GET /cart
+- POST /cart
+- DELETE /cart/:itemId
+
+## Chat
+If using internal chat:
+- GET /chats
+- POST /chats (start)
+- GET /chats/:id/messages
+- POST /chats/:id/messages
+
+## Admin
+- GET /admin/users
+- GET /admin/products
+- GET /admin/reports
+
+## Errors
+Standard error format:
+{ "error": "Description", "code": "ERROR_CODE", "details": {} }
+
+## Notes
+- All endpoints requiring authentication use header Authorization: Bearer <access_token>.
+- Rate limiting applied to auth endpoints: 10 req/min per IP.
