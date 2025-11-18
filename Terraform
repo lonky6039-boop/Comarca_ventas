@@ -1,0 +1,28 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+resource "aws_s3_bucket" "comarca_assets" {
+  bucket = var.s3_bucket_name
+  acl    = "private"
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier = "comarca-postgres"
+  allocated_storage = 20
+  engine = "postgres"
+  engine_version = "15"
+  instance_class = "db.t3.micro"
+  username = var.db_user
+  password = var.db_password
+  skip_final_snapshot = true
+}
