@@ -1,0 +1,42 @@
+comarca-ventas/
+│
+├── README.md
+├── .gitignore
+│
+├── brand/                        # Identidad visual
+│   ├── logos/
+│   ├── paleta/
+│   ├── manual/
+│   └── mockups/
+│
+├── app/                          # Proyecto móvil
+│   ├── android/
+│   ├── ios/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── screens/
+│   │   ├── navigation/
+│   │   ├── services/
+│   │   ├── assets/
+│   │   │   ├── icons/
+│   │   │   └── images/
+│   │   └── utils/
+│   └── package.json
+│
+├── api/                          # Backend (si se implementa)
+│   ├── routes/
+│   ├── controllers/
+│   ├── models/
+│   ├── config/
+│   └── server.js
+│
+├── database/
+│   ├── schema.sql
+│   ├── seed.sql
+│   └── README.md
+│
+└── docs/
+    ├── arquitectura.md
+    ├── endpoints.md
+    ├── ui-kit.md
+    └── roadmap.md
