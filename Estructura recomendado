@@ -1,0 +1,212 @@
+comarca-ventas/
+├── app/                       # Frontend (React Native - Expo)
+│   ├── App.tsx
+│   ├── package.json
+│   └── src/
+│       ├── screens/
+│       ├── components/
+│       └── services/
+├── backend/                   # Backend (NestJS minimal / Node + Express alternative)
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── app.module.ts
+│   │   ├── auth/
+│   │   ├── products/
+│   │   └── uploads/
+│   ├── prisma/
+│   │   └── schema.prisma
+│   ├── package.json
+│   └── tsconfig.json
+├── infra/
+│   └── docker-compose.yml
+├── docs/
+│   └── API_REFERENCE.md
+├── .env.example
+└── README.md
+{
+  "name": "comarca-backend",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "dist",
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true
+  }
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phone       String? 
+  password    String
+  role        String   @default("buyer")
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  products    Product[]
+  orders      Order[]  @relation("buyerOrders")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  seller      User     @relation(fields: [sellerId], references: [id])
+  sellerId    String
+  title       String
+  description String?
+  priceCents  Int
+  currency    String  @default("ARS")
+  stock       Int     @default(1)
+  condition   String  @default("new")
+  category    String?
+  images      ProductImage[]
+  status      String  @default("active")
+  createdAt   DateTime @default(now())
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  url       String
+  orderIdx  Int     @default(0)
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  buyer      User        @relation("buyerOrders", fields: [buyerId], references: [id])
+  buyerId    String
+  totalCents Int
+  currency   String      @default("ARS")
+  status     String      @default("pending")
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  order      Order   @relation(fields: [orderId], references: [id])
+  orderId    String
+  product    Product @relation(fields: [productId], references: [id])
+  productId  String
+  qty        Int
+  unitCents  Int
+}
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import multer from 'multer';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import path from 'path';
+import fs from 'fs';
+
+const prisma = new PrismaClient();
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Simple file upload via multer -> store in ./uploads
+const upload = multer({ dest: './uploads/' });
+
+// Health
+app.get('/v1/health', (req, res) => res.json({ ok: true }));
+
+// Auth: signup (email/password)
+app.post('/v1/auth/signup', async (req, res) => {
+  const { name, email, password, phone } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Missing' });
+  const hashed = await bcrypt.hash(password, 10);
+  try {
+    const user = await prisma.user.create({
+      data: { name, email, phone, password: hashed }
+    });
+    res.json({ user: { id: user.id, email: user.email, name: user.name }});
+  } catch (e) {
+    res.status(400).json({ error: 'User exists' });
+  }
+});
+
+// Auth: login
+app.post('/v1/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email }});
+  if (!user) return res.status(401).json({ error: 'Invalid' });
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) return res.status(401).json({ error: 'Invalid' });
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'dev', { expiresIn: '7d' });
+  res.json({ token, user: { id: user.id, email: user.email, name: user.name }});
+});
+
+// Create product (multipart: images)
+app.post('/v1/products', upload.array('images', 6), async (req, res) => {
+  try {
+    const { title, description, priceCents = 0, stock = 1, currency = 'ARS', sellerId } = req.body;
+    const product = await prisma.product.create({ data: {
+      title, description, priceCents: Number(priceCents), stock: Number(stock), currency, sellerId
+    }});
+    // save images as file URLs
+    const files = req.files as Express.Multer.File[] || [];
+    for (let i=0;i<files.length;i++){
+      const f = files[i];
+      const dest = path.join('uploads', f.filename + path.extname(f.originalname));
+      fs.renameSync(f.path, dest);
+      await prisma.productImage.create({ data: { productId: product.id, url: '/' + dest, orderIdx: i }});
+    }
+    res.json({ product });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'server' });
+  }
+});
+
+// List products
+app.get('/v1/products', async (req, res) => {
+  const q = String(req.query.q || '');
+  const products = await prisma.product.findMany({
+    where: { title: { contains: q, mode: 'insensitive' }, status: 'active' },
+    include: { images: true },
+    take: 50
+  });
+  res.json({ products });
+});
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
+
+const port = Number(process.env.PORT || 3000);
+app.listen(port, () => console.log('Server listening on', port));
