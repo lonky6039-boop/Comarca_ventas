@@ -18,3 +18,29 @@ comarca-ventas/
 └── app/
     ├── estructura_base.txt
     └── arquitectura.md
+comarca-ventas/
+├── backend/
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── app.ts
+│   │   ├── routes/
+│   │   │   ├── auth.ts
+│   │   │   └── products.ts
+│   │   ├── middleware/
+│   │   │   └── auth.ts
+│   │   ├── services/
+│   │   │   └── cloudinary.ts
+│   │   └── prisma.ts
+│   └── prisma/
+│       └── schema.prisma
+├── app/   (frontend - Expo)
+│   ├── package.json
+│   ├── App.tsx
+│   └── src/
+│       ├── screens/HomeScreen.tsx
+│       ├── screens/AddProductScreen.tsx
+│       └── api/client.ts
+├── docker-compose.yml
+└── .env.example
