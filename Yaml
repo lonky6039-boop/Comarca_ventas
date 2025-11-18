@@ -1,0 +1,36 @@
+- id: 1
+  title: "Repo init and README"
+  estimate: "1d"
+- id: 2
+  title: "Docker compose and local env"
+  estimate: "2d"
+- id: 3
+  title: "Auth: signup/login (email, phone, oauth)"
+  estimate: "5d"
+- id: 4
+  title: "Users profile endpoints"
+  estimate: "2d"
+- id: 5
+  title: "Products CRUD + image upload"
+  estimate: "8d"
+- id: 6
+  title: "Search & filters"
+  estimate: "5d"
+- id: 7
+  title: "Cart and Orders flow"
+  estimate: "6d"
+- id: 8
+  title: "Payments integration (MercadoPago sandbox)"
+  estimate: "6d"
+- id: 9
+  title: "Chat (Firestore or Socket.io)"
+  estimate: "6d"
+- id: 10
+  title: "Admin panel basic"
+  estimate: "5d"
+- id: 11
+  title: "E2E tests and QA"
+  estimate: "5d"
+- id: 12
+  title: "Release pipeline and store prep"
+  estimate: "4d"
