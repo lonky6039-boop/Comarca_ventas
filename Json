@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Comarca Ventas",
+    "slug": "comarca-ventas",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "platforms": ["ios","android"],
+    "ios": {"supportsTablet": true},
+    "android": {
+      "package": "com.comarcaventas.app",
+      "adaptiveIcon": {
+        "foregroundImage":"./assets/icon.png",
+        "backgroundColor":"#4A2F20"
+      }
+    }
+  }
+}
