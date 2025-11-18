@@ -1,0 +1,57 @@
+comarca_ventas/
+│
+├── README.md
+├── LICENSE
+├── .gitignore
+│
+├── brand/
+│   ├── logos/
+│   │   ├── logo.svg
+│   │   ├── logo.png
+│   │   └── icon_app.png
+│   ├── manual/
+│   │   └── manual_de_marca.pdf
+│   └── paleta_colores.json
+│
+├── app/
+│   ├── android/
+│   ├── ios/
+│   ├── assets/
+│   │   ├── fonts/
+│   │   └── images/
+│   ├── lib/
+│   │   ├── main.dart
+│   │   ├── ui/
+│   │   ├── screens/
+│   │   ├── widgets/
+│   │   ├── models/
+│   │   ├── controllers/
+│   │   └── services/
+│   └── pubspec.yaml
+│
+├── backend/
+│   ├── api/
+│   │   ├── auth/
+│   │   ├── products/
+│   │   ├── chat/
+│   │   └── users/
+│   ├── database/
+│   │   └── schema.sql
+│   ├── docker/
+│   └── server.js
+│
+├── design/
+│   ├── mockups/
+│   │   ├── login.png
+│   │   ├── home.png
+│   │   ├── catalogo.png
+│   │   ├── filtros.png
+│   │   ├── carrito.png
+│   │   └── chat.png
+│   └── ux-flows/
+│       └── flujo_app.pdf
+│
+└── docs/
+    ├── arquitectura.md
+    ├── roadmap.md
+    └── requerimientos.md
