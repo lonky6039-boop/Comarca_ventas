@@ -1,0 +1,10 @@
+# APK scaffolding - Comarca Ventas
+
+Steps to build APK (Expo managed workflow):
+1. Install Expo CLI: npm install -g expo-cli
+2. From repo root: cd apk_scaffolding
+3. Add app code or point to /app
+4. expo build:android --type apk (or use EAS build for newer workflow)
+5. For Play Store: create keystore and use expo credentials to sign builds.
+
+Note: iOS requires Apple Developer account and macOS to build locally or use EAS.
