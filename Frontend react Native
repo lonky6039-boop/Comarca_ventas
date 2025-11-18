@@ -1,0 +1,133 @@
+{
+  "name": "comarca-ventas-app",
+  "version": "0.1.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios"
+  },
+  "dependencies": {
+    "expo": "~48.0.0",
+    "react": "18.2.0",
+    "react-native": "0.71.0",
+    "axios": "^1.4.0"
+  }
+}
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, Text, View, FlatList, Image, TouchableOpacity, TextInput, Button } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+
+const API = 'http://10.0.2.2:3000/v1'; // use 10.0.2.2 for Android emulator; use local IP for device
+
+export default function App(){
+  const [products, setProducts] = useState([]);
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(()=>{ fetchProducts(); }, []);
+
+  async function fetchProducts(){
+    const res = await axios.get(`${API}/products`);
+    setProducts(res.data.products || []);
+  }
+
+  async function pickImage(){
+    const res = await ImagePicker.launchImageLibraryAsync({mediaTypes: ImagePicker.MediaTypeOptions.Images, quality:0.7});
+    if (!res.cancelled) setImages(prev=>[...prev, res.uri]);
+  }
+
+  async function uploadProduct(){
+    const form = new FormData();
+    form.append('title', title);
+    form.append('priceCents', String(Math.round(Number(price)*100)));
+    form.append('sellerId', 'seeder-seller-id'); // replace with real user id
+    for (let i=0;i<images.length;i++){
+      const uri = images[i];
+      const filename = uri.split('/').pop() || `img${i}.jpg`;
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image`;
+      form.append('images', { uri, name: filename, type } as any);
+    }
+    await fetch(`${API}/products`, { method:'POST', body: form, headers:{ 'Content-Type':'multipart/form-data' }});
+    setTitle(''); setPrice(''); setImages([]); fetchProducts();
+  }
+
+  return (
+    <SafeAreaView style={{flex:1, padding:12, backgroundColor:'#F5EFE6'}}>
+      <Text style={{fontSize:22,fontWeight:'700'}}>COMARCA VENTAS</Text>
+      <View style={{marginVertical:12}}>
+        <TextInput value={title} onChangeText={setTitle} placeholder="Nombre del producto" style={{borderWidth:1,padding:8,marginBottom:8}} />
+        <TextInput value={price} onChangeText={setPrice} placeholder="Precio (ej: 1200.50)" keyboardType="numeric" style={{borderWidth:1,padding:8,marginBottom:8}} />
+        <Button title="Agregar foto" onPress={pickImage} />
+        <View style={{flexDirection:'row', marginTop:8}}>
+          {images.map((u,i)=>(<Image key={i} source={{uri:u}} style={{width:64,height:64, marginRight:8}} />))}
+        </View>
+        <Button title="Subir producto" onPress={uploadProduct} />
+      </View>
+
+      <FlatList data={products} keyExtractor={(item:any)=>item.id} renderItem={({item})=>(
+        <View style={{backgroundColor:'#fff', padding:12, marginBottom:8, borderRadius:8}}>
+          <Text style={{fontWeight:'700'}}>{item.title}</Text>
+          <Text>{item.priceCents/100} {item.currency}</Text>
+          {item.images?.[0] && <Image source={{uri:'http://10.0.2.2:3000' + item.images[0].url}} style={{height:120,marginTop:8}} />}
+        </View>
+      )} />
+    </SafeAreaView>
+  );
+}
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: comarcadev
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: comarcaventas
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+    command: npm run dev
+    volumes:
+      - ./backend:/usr/src/app
+      - ./uploads:/usr/src/app/uploads
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://comarcadev:changeme@postgres:5432/comarcaventas
+      JWT_SECRET: devsecret
+    depends_on:
+      - postgres
+      - redis
+
+  expo:
+    image: expo/expo
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    ports:
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    command: ["npm","start"]
+
+volumes:
+  pgdata:
+DATABASE_URL=postgresql://comarcadev:changeme@localhost:5432/comarcaventas
+JWT_SECRET=replace_with_strong_secret
+PORT=3000
+cd app
+npm install
+npx expo start
