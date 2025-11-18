@@ -1,0 +1,142 @@
+Comarca Ventas — Repositorio completo (estructura y archivos iniciales)
+
+> Este documento contiene la estructura propuesta del repositorio, archivos iniciales y snippets listos para copiar y pegar en su máquina o en GitHub. Puede usar esta única fuente para crear el repositorio real.
+
+
+
+
+---
+
+Estructura del repositorio
+
+comarca-ventas/
+├── app/                      # Frontend React Native (Expo)
+│   ├── App.tsx
+│   ├── package.json
+│   ├── assets/
+│   │   └── icon.png
+│   └── src/
+│       ├── components/
+│       ├── screens/
+│       ├── navigation/
+│       └── services/
+├── backend/                  # Backend NestJS + Prisma
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── app.module.ts
+│   │   ├── modules/
+│   │   └── controllers/
+│   ├── package.json
+│   └── prisma/
+├── docs/
+│   ├── API_REFERENCE.md
+│   └── ERD_mermaid.md
+├── infra/
+│   ├── docker-compose.yml
+│   └── terraform/
+├── brand/
+│   ├── logo.svg
+│   ├── logo.png
+│   └── manual_de_marca.pdf
+├── .github/
+│   └── workflows/
+│       └── backend-ci.yml
+├── README.md
+└── .env.example
+
+
+---
+
+Archivos clave (snippets)
+
+> Los siguientes archivos están incluidos dentro de este documento: cópielos y péguelos en los archivos correspondientes del repo.
+
+
+
+README.md (principal)
+
+# Comarca Ventas
+Marketplace local de la Comarca Andina — app móvil para vender y comprar productos regionales.
+
+Ver `/docs` para API, ERD y guías de instalación.
+
+app/App.tsx (snippet inicial React Native + Expo)
+
+import React from 'react';
+import { SafeAreaView, Text, View, Image, StyleSheet } from 'react-native';
+export default function App(){
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Image source={require('./assets/icon.png')} style={styles.logo} />
+        <Text style={styles.title}>COMARCA VENTAS</Text>
+      </View>
+      <View style={styles.body}><Text>Bienvenido a Comarca Ventas</Text></View>
+    </SafeAreaView>
+  )
+}
+const styles = StyleSheet.create({container:{flex:1,backgroundColor:'#F5EFE6'},header:{flexDirection:'row',alignItems:'center',padding:20},logo:{width:64,height:64,marginRight:12},title:{fontSize:20,fontWeight:'700',color:'#2B2B2B'},body:{padding:20}})
+
+backend/src/main.ts (NestJS arranque rápido)
+
+import { NestFactory } from '@nestjs/core';
+import { Module, Controller, Get } from '@nestjs/common';
+@Controller()
+class AppController{ @Get() root(){ return {message:'Comarca Ventas API running'} }}
+@Module({controllers:[AppController]})
+class AppModule{}
+async function bootstrap(){ const app = await NestFactory.create(AppModule); await app.listen(3000); console.log('API listening on http://localhost:3000');}
+bootstrap();
+
+.env.example
+
+DATABASE_URL=postgresql://user:password@localhost:5432/comarcaventas
+JWT_SECRET=clave-segura
+CLOUDINARY_URL=cloudinary://xxxx
+FIREBASE_API_KEY=xxxx
+MERCADOPAGO_ACCESS_TOKEN=xxxx
+STRIPE_KEY=xxxx
+
+
+---
+
+Documentación ya generada
+
+docs/API_REFERENCE.md — endpoints básicos (auth, products, uploads, orders, chat, admin)
+
+docs/ERD_mermaid.md — modelo entidad-relación en formato Mermaid
+
+infra/docker-compose.yml — entorno local (Postgres, Redis, backend, app)
+
+.github/workflows/backend-ci.yml — plantilla CI
+
+
+
+---
+
+Cómo crear el repositorio en GitHub (pasos rápidos)
+
+1. En su máquina: mkdir comarca-ventas && cd comarca-ventas
+
+
+2. Crear la estructura: copie los archivos desde este documento y péguelos en las rutas indicadas.
+
+
+3. Inicialice git: git init && git add . && git commit -m "Initial commit"
+
+
+4. Crear repo en GitHub y empuje: git remote add origin <repo-url> && git push -u origin main
+
+
+
+
+---
+
+¿Desea que exporte este repositorio como ZIP desde aquí?
+
+Puedo intentar crear el ZIP y darle un enlace de descarga. Si lo desea, responda: "Generar ZIP del repo" y lo preparo.
+
+
+---
+
+> Nota: este documento está pensado para que lo use como plantilla. Si quiere que yo genere físicamente los archivos y el ZIP en mi entorno, diga "Generar ZIP del repo" y lo intentaré ahora.
