@@ -1,0 +1,20 @@
+comarca-ventas/
+│
+├── README.md
+│
+├── brand/
+│   ├── logo_comarca_ventas.svg
+│   ├── logo_comarca_ventas.png
+│   ├── app_icon_comarca_ventas.png
+│   └── manual_de_marca_comarca_ventas.pdf (descripción de contenido)
+│
+├── mockups/
+│   ├── opcion_a/
+│   │   └── descripcion_mockups.txt
+│   └── opcion_b/
+│       ├── ui_mockups.txt
+│       └── user_flow.txt
+│
+└── app/
+    ├── estructura_base.txt
+    └── arquitectura.md
