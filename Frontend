@@ -1,0 +1,122 @@
+{
+  "name": "comarca-ventas-app",
+  "version": "0.1.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios"
+  },
+  "dependencies": {
+    "expo": "~48.0.0",
+    "react": "18.2.0",
+    "react-native": "0.71.0",
+    "expo-image-picker": "~14.1.1"
+  }
+}
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import HomeScreen from "./src/screens/HomeScreen";
+import AddProductScreen from "./src/screens/AddProductScreen";
+
+const Stack = createNativeStackNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: "Comarca Ventas" }}/>
+        <Stack.Screen name="AddProduct" component={AddProductScreen} options={{ title: "Vender producto" }}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+const API = process.env.EXPO_PUBLIC_API_URL || "http://10.0.2.2:3000/v1"; // use emulator host
+export const fetchProducts = async () => {
+  const res = await fetch(`${API}/products`);
+  return res.json();
+};
+
+export const createProduct = async (token: string|null, payload: any) => {
+  const res = await fetch(`${API}/products`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(token?{ Authorization: `Bearer ${token}` }: {}) },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, Button, Image, TouchableOpacity } from "react-native";
+import { fetchProducts } from "../api/client";
+
+export default function HomeScreen({ navigation }: any) {
+  const [products, setProducts] = useState<any[]>([]);
+  useEffect(() => {
+    (async () => {
+      const data = await fetchProducts();
+      setProducts(data);
+    })();
+  }, []);
+  return (
+    <View style={{ flex:1, padding:16 }}>
+      <Button title="Vender" onPress={() => navigation.navigate("AddProduct")} />
+      <FlatList
+        data={products}
+        keyExtractor={(item)=>item.id}
+        renderItem={({item})=>(
+          <TouchableOpacity style={{ marginVertical:8, padding:10, borderWidth:1, borderRadius:8 }}>
+            {item.images && item.images[0] && <Image source={{ uri: item.images[0].url }} style={{ width:100, height:100 }} />}
+            <Text style={{ fontWeight:"700" }}>{item.title}</Text>
+            <Text>${(item.priceCents/100).toFixed(2)}</Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
+}
+import React, { useState } from "react";
+import { View, TextInput, Button, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { createProduct } from "../api/client";
+
+export default function AddProductScreen() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+
+  const pickImage = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.6, allowsMultipleSelection: true });
+    if (!res.canceled) {
+      // for expo sdk new returns array or single
+      const picked = Array.isArray(res.assets) ? res.assets : [res];
+      const b64s = picked.map(p => `data:${p.type || 'image/jpeg'};base64,${p.base64}`);
+      setImages(curr => [...curr, ...b64s]);
+    }
+  };
+
+  const submit = async () => {
+    // token must come from login; for demo we assume no-auth or put a test token
+    const payload = {
+      title, description, priceCents: Math.round(Number(price)*100), currency: "ARS", stock: 1, images
+    };
+    try {
+      const res = await createProduct(null, payload);
+      Alert.alert("Producto creado", JSON.stringify(res));
+    } catch(e){
+      Alert.alert("Error", e.message);
+    }
+  };
+
+  return (
+    <View style={{ flex:1, padding:16 }}>
+      <TextInput placeholder="Título" value={title} onChangeText={setTitle} style={{ borderWidth:1, marginBottom:8, padding:8 }}/>
+      <TextInput placeholder="Descripción" value={description} onChangeText={setDescription} style={{ borderWidth:1, marginBottom:8, padding:8 }}/>
+      <TextInput placeholder="Precio (ej: 1999.99)" value={price} onChangeText={setPrice} keyboardType="numeric" style={{ borderWidth:1, marginBottom:8, padding:8 }}/>
+      <Button title="Seleccionar imagen" onPress={pickImage} />
+      <View style={{ height:12 }}/>
+      <Button title="Publicar producto" onPress={submit} />
+    </View>
+  );
+}
