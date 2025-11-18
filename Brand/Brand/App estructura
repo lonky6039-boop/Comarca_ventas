@@ -1,0 +1,7 @@
+Estructura inicial de la app móvil:
+- /screens/
+- /components/
+- /services/
+- /auth/
+- /api/
+- /assets/
