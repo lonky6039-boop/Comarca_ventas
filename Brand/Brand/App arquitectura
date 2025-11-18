@@ -1,0 +1,11 @@
+# Arquitectura de la App
+
+Patrón sugerido: Clean Architecture + MVVM.
+
+## Capas
+- UI (Flutter/React Native)
+- Dominio
+- Infraestructura
+- Datos
+
+Incluye: navegación, servicios, modelo de usuario, lógica de negocio.
