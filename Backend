@@ -1,0 +1,302 @@
+comarca-ventas/
+├── backend/
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── app.ts
+│   │   ├── routes/
+│   │   │   ├── auth.ts
+│   │   │   └── products.ts
+│   │   ├── middleware/
+│   │   │   └── auth.ts
+│   │   ├── services/
+│   │   │   └── cloudinary.ts
+│   │   └── prisma.ts
+│   └── prisma/
+│       └── schema.prisma
+├── app/   (frontend - Expo)
+│   ├── package.json
+│   ├── App.tsx
+│   └── src/
+│       ├── screens/HomeScreen.tsx
+│       ├── screens/AddProductScreen.tsx
+│       └── api/client.ts
+├── docker-compose.yml
+└── .env.example
+{
+  "name": "comarca-ventas-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cloudinary": "^1.32.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/bcrypt": "^5.0.0"
+  }
+}{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String?
+  email      String   @unique
+  password   String
+  role       String   @default("buyer")
+  createdAt  DateTime @default(now())
+  products   Product[]
+  orders     Order[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  priceCents  Int
+  currency    String   @default("ARS")
+  stock       Int      @default(1)
+  images      ProductImage[]
+  seller      User     @relation(fields: [sellerId], references: [id])
+  sellerId    String
+  category    String?
+  createdAt   DateTime @default(now())
+  status      String   @default("active")
+}
+
+model ProductImage {
+  id        String @id @default(uuid())
+  url       String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  order     Int     @default(0)
+}
+
+model Order {
+  id         String   @id @default(uuid())
+  buyer      User     @relation(fields: [buyerId], references: [id])
+  buyerId    String
+  totalCents Int
+  currency   String  @default("ARS")
+  status     String  @default("pending")
+  createdAt  DateTime @default(now())
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  order     Order  @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  qty       Int
+  unitPrice Int
+}import { PrismaClient } from "@prisma/client";
+export const prisma = new PrismaClient();
+import cloudinary from "cloudinary";
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
+
+export const uploadImage = async (base64: string) => {
+  // expects base64 data URI without headers or full data URI; client can send dataURI
+  const res = await cloudinary.v2.uploader.upload(base64, { folder: "comarca_ventas" });
+  return res.secure_url;
+};
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+
+export interface AuthRequest extends Request {
+  userId?: string;
+}
+
+export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: "No token" });
+  const token = header.split(" ")[1];
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET || "dev-secret") as any;
+    req.userId = payload.sub;
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
+import { Router } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { prisma } from "../prisma";
+
+const router = Router();
+
+router.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: "email/password required" });
+  const hashed = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({ data: { name, email, password: hashed }});
+  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "7d" });
+  res.json({ user: { id: user.id, email: user.email, name: user.name }, token });
+});
+
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email }});
+  if (!user) return res.status(401).json({ error: "Invalid credentials" });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ error: "Invalid credentials" });
+  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "7d" });
+  res.json({ user: { id: user.id, email: user.email, name: user.name }, token });
+});
+
+export default router;
+import { Router } from "express";
+import { prisma } from "../prisma";
+import { authMiddleware } from "../middleware/auth";
+import { uploadImage } from "../services/cloudinary";
+
+const router = Router();
+
+// Create product (seller must be authenticated)
+router.post("/", authMiddleware, async (req: any, res) => {
+  const { title, description, priceCents, currency, stock, category, images } = req.body;
+  const sellerId = req.userId;
+  if (!sellerId) return res.status(401).json({ error: "No seller" });
+  const product = await prisma.product.create({
+    data: {
+      title, description, priceCents: Number(priceCents), currency, stock: Number(stock), sellerId, category
+    }
+  });
+  // handle images (array of base64 or dataURI)
+  if (images && images.length) {
+    for (let i = 0; i < images.length; i++) {
+      try {
+        const url = await uploadImage(images[i]);
+        await prisma.productImage.create({ data: { url, productId: product.id, order: i }});
+      } catch (e) {
+        console.error("upload fail", e);
+      }
+    }
+  }
+  res.json(product);
+});
+
+// List products with simple filters
+router.get("/", async (req, res) => {
+  const q = req.query.q as string || "";
+  const category = req.query.category as string | undefined;
+  const products = await prisma.product.findMany({
+    where: {
+      title: { contains: q, mode: "insensitive" },
+      category: category ? category : undefined,
+      status: "active"
+    },
+    include: { images: true, seller: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 50
+  });
+  res.json(products);
+});
+
+// Get product
+router.get("/:id", async (req, res) => {
+  const product = await prisma.product.findUnique({ where: { id: req.params.id }, include: { images: true, seller: true }});
+  if (!product) return res.status(404).json({ error: "Not found" });
+  res.json(product);
+});
+
+export default router;
+import express from "express";
+import cors from "cors";
+import authRoutes from "./routes/auth";
+import productRoutes from "./routes/products";
+
+export const createApp = () => {
+  const app = express();
+  app.use(cors());
+  app.use(express.json({ limit: "10mb" }));
+  app.use("/v1/auth", authRoutes);
+  app.use("/v1/products", productRoutes);
+  return app;
+};
+import { createApp } from "./app";
+import { prisma } from "./prisma";
+
+const app = createApp();
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log(`API listening on ${port}`);
+});
+DATABASE_URL=postgresql://comarcadev:changeme@localhost:5432/comarcaventas
+JWT_SECRET=changeme_jwt_secret
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+PORT=3000
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: comarcadev
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: comarcaventas
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://comarcadev:changeme@db:5432/comarcaventas
+      - JWT_SECRET=changeme_jwt_secret
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
