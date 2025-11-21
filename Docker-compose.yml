@@ -122,3 +122,20 @@ erDiagram
         uuid product_id FK
         timestamptz created_at
     }
+# 1) Ver contenido de docker-compose
+cat Docker-compose.yml > salida_docker.txt
+
+# 2) Sacar package.json del backend y frontend (si existen)
+cat Backend/package.json > salida_backend_pkg.json || true
+cat "Frontend react Native/package.json" > salida_frontend_pkg.json || true
+
+# 3) Auditoría rápida de dependencias (si tiene node)
+# Backend
+cd Backend && npm install --legacy-peer-deps >/dev/null 2> errores_backend_npm.txt || true
+npm audit --json > salida_backend_audit.json || true
+cd ..
+
+# Frontend
+cd "Frontend react Native" && npm install --legacy-peer-deps >/dev/null 2> errores_frontend_npm.txt || true
+npm audit --json > salida_frontend_audit.json || true
+cd ..
