@@ -1,3 +1,5 @@
+cd "../Frontend react Native"
+npm install
 {
   "name": "comarca-ventas-app",
   "version": "0.1.0",
