@@ -1,3 +1,17 @@
+cd Comarca_ventas
+mkdir -p .github/workflows
+nano .github/workflows/apk.yml
+name: Build APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: cd "Frontend react Native" && npm install && npx eas build --platform android --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 import { Response } from 'express';
 
