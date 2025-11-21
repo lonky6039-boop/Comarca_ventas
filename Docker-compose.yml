@@ -1,3 +1,8 @@
+env_file:
+      - ./Backend/.env
+    user: "node"
+    security_opt:
+      - no-new-privileges:true
 docker-compose up --build
 (Si lo guarda en GitHub, la extensión `.md` con la etiqueta ```mermaid mostrará el diagrama.)
 
