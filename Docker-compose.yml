@@ -1,3 +1,38 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./Backend
+    command: npm run start:dev
+    volumes:
+      - ./backend:/usr/src/app
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./Backend/.env
+    user: "node"
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  db_data:
 env_file:
       - ./Backend/.env
     user: "node"
