@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Comarca Ventas</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2E4F41"/>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#F5EFE6; color:#2B2B2B; }
+    header { background:#2E4F41; color:#fff; padding:20px; text-align:center; }
+    .container { padding:16px; max-width:720px; margin:0 auto; }
+    .product { background:#fff; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+    .btn { display:inline-block; background:#C47A42; color:#fff; padding:10px 16px; border-radius:10px; text-decoration:none; }
+    footer { text-align:center; padding:16px; color:#666; font-size:14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>COMARCA VENTAS</h1>
+    <p>Marketplace local — PWA</p>
+  </header>
+
+  <div class="container">
+    <div class="product">
+      <h3>Producto ejemplo 1</h3>
+      <p>Descripción breve del producto. Lugar: El Bolsón.</p>
+      <p><strong>$ 1000</strong></p>
+      <a class="btn" href="#">Comprar</a>
+    </div>
+
+    <div class="product">
+      <h3>Producto ejemplo 2</h3>
+      <p>Descripción breve del producto.</p>
+      <p><strong>$ 2500</strong></p>
+      <a class="btn" href="#">Comprar</a>
+    </div>
+  </div>
+
+  <footer>© Comarca Ventas — Hecho en la Comarca Andina</footer>
+
+  <script>
+    // register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error', e));
+    }
+  </script>
+</body>
+</html>
