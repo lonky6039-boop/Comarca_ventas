@@ -139,3 +139,20 @@ cd ..
 cd "Frontend react Native" && npm install --legacy-peer-deps >/dev/null 2> errores_frontend_npm.txt || true
 npm audit --json > salida_frontend_audit.json || true
 cd ..
+services:
+   backend:
+     build: ./Backend
+     container_name: backend
+     ports:
+       - "3000:3000"
+
+-    environment:
+-      DB_PASSWORD: "1234"
++    env_file:
++      - ./Backend/.env
+
+-    user: root
++    user: "node"
+
++    security_opt:
++      - no-new-privileges:true
