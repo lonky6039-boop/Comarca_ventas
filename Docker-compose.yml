@@ -1,3 +1,4 @@
+docker-compose up --build
 (Si lo guarda en GitHub, la extensión `.md` con la etiqueta ```mermaid mostrará el diagrama.)
 
 ---
