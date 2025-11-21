@@ -300,3 +300,4 @@ services:
 
 volumes:
   db_data:
+npm install helmet
