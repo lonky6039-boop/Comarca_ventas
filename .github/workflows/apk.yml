@@ -9,5 +9,5 @@ jobs:
       - uses: actions/setup-node@v3
       - run: cd "Frontend react Native" && npm install && npx eas build --platform android --non-interactive
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}+
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
