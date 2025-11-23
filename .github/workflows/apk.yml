@@ -1,4 +1,4 @@
-name: Build APK
+echo 'name: Build APK
 on: [push]
 jobs:
   build:
@@ -13,4 +13,4 @@ jobs:
           npm install
           npx eas build --platform android --non-interactive
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}' > .github/workflows/apk.yml
