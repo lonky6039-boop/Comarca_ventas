@@ -6,6 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: cd "Frontend react Native" && npm install && npx eas build --platform android --non-interactive
+      - run: |
+          mkdir -p frontend-app
+          cat "Frontend react Native" > frontend-app/package.json
+          cd frontend-app
+          npm install
+          npx eas build --platform android --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
