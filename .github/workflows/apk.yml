@@ -1,4 +1,4 @@
-echo'name: Build APK
+echo 'name: Build APK
 on: [push]
 jobs:
   build:
@@ -6,11 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: |
+      - run: | 
           mkdir -p frontend-app
           cat "Frontend react Native" > frontend-app/package.json
           cd frontend-app
           npm install
           npx eas build --platform android --non-interactive
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}' > .github/workflows/apk.yml
