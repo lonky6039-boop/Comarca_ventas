@@ -6,26 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: |
-          mkdir -p frontend-app
-          echo '{
-  "name": "comarca-ventas-app",
-  "version": "0.1.0",
-  "main": "node_modules/expo/AppEntry.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios"
-  },
-  "dependencies": {
-    "expo": "~48.0.0",
-    "react": "18.2.0",
-    "react-native": "0.71.0",
-    "expo-image-picker": "~14.1.1"
-  }
-}' > frontend-app/package.json
-          cd frontend-app
-          npm install
-          npx eas build --platform android --non-interactive
+      - run: mkdir -p frontend-app && cd frontend-app && npm init -y && npm install expo@~48.0.0 react@18.2.0 react-native@0.71.0 expo-image-picker@~14.1.1 && npx eas build --platform android --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
