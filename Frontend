@@ -22,13 +22,16 @@ import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput, Alert } f
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 
-// URL de tu backend en Cyclic (cambiar por tu URL real)
-const API_URL = 'https://tu-app-comarca.cyclic.app';
+const API_URL = 'https://tu-backend.cyclic.app'; // Cambiar por tu URL
 
 export default function App() {
   const [image, setImage] = useState(null);
   const [productos, setProductos] = useState([]);
-  const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '' });
+  const [nuevoProducto, setNuevoProducto] = useState({ 
+    nombre: '', 
+    precio: '', 
+    descripcion: '' 
+  });
 
   useEffect(() => {
     cargarProductos();
@@ -39,35 +42,40 @@ export default function App() {
       const response = await axios.get(`${API_URL}/api/productos`);
       setProductos(response.data);
     } catch (error) {
-      console.log('Error cargando productos:', error);
-      Alert.alert('Error', 'No se pudieron cargar los productos');
+      Alert.alert('Error', 'No se pudo conectar al servidor');
     }
   };
 
   const agregarProducto = async () => {
     if (!nuevoProducto.nombre || !nuevoProducto.precio) {
-      Alert.alert('Error', 'Completa todos los campos');
+      Alert.alert('Error', 'Nombre y precio son obligatorios');
       return;
     }
 
     try {
       await axios.post(`${API_URL}/api/productos`, {
-        nombre: nuevoProducto.nombre,
+        ...nuevoProducto,
         precio: parseFloat(nuevoProducto.precio),
         imagen: image,
         categoria: 'general'
       });
       
-      setNuevoProducto({ nombre: '', precio: '' });
+      setNuevoProducto({ nombre: '', precio: '', descripcion: '' });
       setImage(null);
       cargarProductos();
-      Alert.alert('Éxito', 'Producto agregado correctamente');
+      Alert.alert('Éxito', 'Producto agregado');
     } catch (error) {
       Alert.alert('Error', 'No se pudo agregar el producto');
     }
   };
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso necesario', 'Necesitas permitir acceso a fotos');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -84,7 +92,7 @@ export default function App() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>🏪 Comarca Ventas</Text>
       
-      {/* Formulario para agregar producto */}
+      {/* Formulario */}
       <View style={styles.form}>
         <Text style={styles.subtitle}>Agregar Producto:</Text>
         
@@ -103,126 +111,12 @@ export default function App() {
           onChangeText={(text) => setNuevoProducto({...nuevoProducto, precio: text})}
         />
         
-        <Button title="📸 Seleccionar imagen" onPress={pickImage} />
-        {image && <Image source={{ uri: image }} style={styles.image} />}
-        
-        <Button title="➕ Agregar Producto" onPress={agregarProducto} />
-      </View>
-
-      {/* Lista de productos */}
-      <Text style={styles.subtitle}>Productos en venta:</Text>
-      {productos.map(producto => (
-        <View key={producto._id} style={styles.producto}>
-          {producto.imagen && <Image source={{ uri: producto.imagen }} style={styles.productoImage} />}
-          <Text style={styles.productoNombre}>{producto.nombre}</Text>
-          <Text style={styles.productoPrecio}>${producto.precio}</Text>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, marginTop: 40 },
-  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-  subtitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20, marginBottom: 10 },
-  form: { backgroundColor: '#f5f5f5', padding: 15, borderRadius: 10, marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
-  image: { width: 200, height: 150, alignSelf: 'center', margin: 10, borderRadius: 10 },
-  producto: { 
-    padding: 15, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#ccc',
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  productoImage: { width: 50, height: 50, borderRadius: 5, marginRight: 10 },
-  productoNombre: { flex: 1, fontSize: 16 },
-  productoPrecio: { fontSize: 16, fontWeight: 'bold', color: 'green' }
-});import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput, Alert } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios';
-
-// URL de tu backend en Cyclic (cambiar por tu URL real)
-const API_URL = 'https://tu-app-comarca.cyclic.app';
-
-export default function App() {
-  const [image, setImage] = useState(null);
-  const [productos, setProductos] = useState([]);
-  const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '' });
-
-  useEffect(() => {
-    cargarProductos();
-  }, []);
-
-  const cargarProductos = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/productos`);
-      setProductos(response.data);
-    } catch (error) {
-      console.log('Error cargando productos:', error);
-      Alert.alert('Error', 'No se pudieron cargar los productos');
-    }
-  };
-
-  const agregarProducto = async () => {
-    if (!nuevoProducto.nombre || !nuevoProducto.precio) {
-      Alert.alert('Error', 'Completa todos los campos');
-      return;
-    }
-
-    try {
-      await axios.post(`${API_URL}/api/productos`, {
-        nombre: nuevoProducto.nombre,
-        precio: parseFloat(nuevoProducto.precio),
-        imagen: image,
-        categoria: 'general'
-      });
-      
-      setNuevoProducto({ nombre: '', precio: '' });
-      setImage(null);
-      cargarProductos();
-      Alert.alert('Éxito', 'Producto agregado correctamente');
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo agregar el producto');
-    }
-  };
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>🏪 Comarca Ventas</Text>
-      
-      {/* Formulario para agregar producto */}
-      <View style={styles.form}>
-        <Text style={styles.subtitle}>Agregar Producto:</Text>
-        
         <TextInput
-          style={styles.input}
-          placeholder="Nombre del producto"
-          value={nuevoProducto.nombre}
-          onChangeText={(text) => setNuevoProducto({...nuevoProducto, nombre: text})}
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Precio"
-          keyboardType="numeric"
-          value={nuevoProducto.precio}
-          onChangeText={(text) => setNuevoProducto({...nuevoProducto, precio: text})}
+          style={[styles.input, styles.textArea]}
+          placeholder="Descripción"
+          multiline
+          value={nuevoProducto.descripcion}
+          onChangeText={(text) => setNuevoProducto({...nuevoProducto, descripcion: text})}
         />
         
         <Button title="📸 Seleccionar imagen" onPress={pickImage} />
@@ -232,12 +126,19 @@ export default function App() {
       </View>
 
       {/* Lista de productos */}
-      <Text style={styles.subtitle}>Productos en venta:</Text>
+      <Text style={styles.subtitle}>Productos ({productos.length}):</Text>
       {productos.map(producto => (
         <View key={producto._id} style={styles.producto}>
-          {producto.imagen && <Image source={{ uri: producto.imagen }} style={styles.productoImage} />}
-          <Text style={styles.productoNombre}>{producto.nombre}</Text>
-          <Text style={styles.productoPrecio}>${producto.precio}</Text>
+          {producto.imagen && (
+            <Image source={{ uri: producto.imagen }} style={styles.productoImage} />
+          )}
+          <View style={styles.productoInfo}>
+            <Text style={styles.productoNombre}>{producto.nombre}</Text>
+            <Text style={styles.productoPrecio}>${producto.precio}</Text>
+            {producto.descripcion && (
+              <Text style={styles.productoDesc}>{producto.descripcion}</Text>
+            )}
+          </View>
         </View>
       ))}
     </ScrollView>
@@ -245,20 +146,30 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, marginTop: 40 },
-  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-  subtitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20, marginBottom: 10 },
-  form: { backgroundColor: '#f5f5f5', padding: 15, borderRadius: 10, marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#333' },
+  subtitle: { fontSize: 18, fontWeight: 'bold', marginVertical: 10, color: '#333' },
+  form: { backgroundColor: '#f8f9fa', padding: 15, borderRadius: 10, marginBottom: 20 },
+  input: { 
+    borderWidth: 1, 
+    borderColor: '#ddd', 
+    padding: 12, 
+    marginBottom: 10, 
+    borderRadius: 8,
+    backgroundColor: '#fff'
+  },
+  textArea: { height: 80, textAlignVertical: 'top' },
   image: { width: 200, height: 150, alignSelf: 'center', margin: 10, borderRadius: 10 },
   producto: { 
     padding: 15, 
     borderBottomWidth: 1, 
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#eee',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'flex-start'
   },
-  productoImage: { width: 50, height: 50, borderRadius: 5, marginRight: 10 },
-  productoNombre: { flex: 1, fontSize: 16 },
-  productoPrecio: { fontSize: 16, fontWeight: 'bold', color: 'green' }
+  productoImage: { width: 60, height: 60, borderRadius: 8, marginRight: 15 },
+  productoInfo: { flex: 1 },
+  productoNombre: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
+  productoPrecio: { fontSize: 16, fontWeight: 'bold', color: 'green', marginBottom: 5 },
+  productoDesc: { fontSize: 14, color: '#666' }
 });
