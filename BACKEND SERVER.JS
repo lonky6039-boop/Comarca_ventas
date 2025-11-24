@@ -1,0 +1,83 @@
+// Crear archivo: backend/server.js
+// Copiar este contenido:
+
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/comarcaventas')
+  .then(() => console.log('✅ Conectado a MongoDB'))
+  .catch(err => console.log('❌ Error MongoDB:', err));
+
+// Modelo de Producto
+const ProductoSchema = new mongoose.Schema({
+  nombre: String,
+  precio: Number,
+  descripcion: String,
+  categoria: String,
+  imagen: String,
+  fecha: { type: Date, default: Date.now }
+});
+
+const Producto = mongoose.model('Producto', ProductoSchema);
+
+// RUTAS
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '🚀 API Comarca Ventas funcionando!',
+    version: '1.0.0'
+  });
+});
+
+// Obtener todos los productos
+app.get('/api/productos', async (req, res) => {
+  try {
+    const productos = await Producto.find().sort({ fecha: -1 });
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error obteniendo productos' });
+  }
+});
+
+// Crear producto
+app.post('/api/productos', async (req, res) => {
+  try {
+    const producto = new Producto(req.body);
+    await producto.save();
+    res.status(201).json(producto);
+  } catch (error) {
+    res.status(400).json({ error: 'Error creando producto' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🟢 Servidor en puerto ${PORT}`);
+});
+// Crear archivo: backend/package.json
+
+{
+  "name": "comarca-ventas-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "mongoose": "^7.0.0",
+    "dotenv": "^16.0.0"
+  }
+}
+// Crear archivo: backend/.env
+
+MONGODB_URI=mongodb+srv://usuario:password@cluster0.tucluster.mongodb.net/comarcaventas?retryWrites=true&w=majority
+PORT=3000
