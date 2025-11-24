@@ -1,0 +1,61 @@
+// Crear archivo: frontend/package.json
+
+{
+  "name": "comarca-ventas-app",
+  "version": "0.1.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "~48.0.0",
+    "expo-status-bar": "~1.4.0",
+    "react": "18.2.0",
+    "react-native": "0.71.8",
+    "expo-image-picker": "~14.1.0",
+    "axios": "^1.4.0"
+  }
+}
+// Crear archivo: frontend/App.js
+// (Usar el código completo que te puse antes - es muy largo para pegar aquí)
+// Te recomiendo copiarlo de mi respuesta anterior
+{
+  "expo": {
+    "name": "Comarca Ventas",
+    "slug": "comarca-ventas",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
+node_modules/
+.env
+*.log
+.DS_Store
+.expo/
+dist/
+build/
