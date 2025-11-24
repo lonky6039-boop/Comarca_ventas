@@ -1,21 +1,7 @@
-# Comarca Ventas – App Móvil
+# Base de datos - Comarca Ventas
 
-Repositorio oficial del proyecto **Comarca Ventas**, un marketplace artesanal y moderno para la Comarca Andina.
-
-## Contenido
-- `/brand/` – Identidad visual, logos e información del manual de marca.
-- `/mockups/` – Mockups y flujos de usuario de las opciones A y B.
-- `/app/` – Arquitectura inicial del proyecto móvil.
-
-## Objetivo
-Crear una plataforma de comercio local con:
-- Catálogo profesional
-- Categorías y filtros
-- Carrito
-- Login social (Google, Facebook, Instagram y teléfono)
-- Chat interno
-- Multi-idioma
-- Diseño artesanal + moderno
-
-## Estado del proyecto
-Identidad visual lista y mockups conceptuales generados.
+## Estructura propuesta:
+- **Usuarios**: vendedores/clientes
+- **Productos**: catálogo de ventas
+- **Ventas**: registro de transacciones
+- **Categorías**: clasificación de productos
