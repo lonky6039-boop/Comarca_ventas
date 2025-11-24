@@ -15,4 +15,4 @@ Aplicación móvil para gestión de ventas desarrollada con React Native + Expo.
 4. Escanear QR con Expo Go
 
 ## 🔧 Backend
-Desplegado en Cyclic.sh con MongoDB Atlas
+Desplegado en Cyclic.sh con MongoDB 
