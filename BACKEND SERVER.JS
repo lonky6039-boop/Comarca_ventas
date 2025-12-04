@@ -77,7 +77,5 @@ app.listen(PORT, () => {
     "dotenv": "^16.0.0"
   }
 }
-// Crear archivo: backend/.env
-
-MONGODB_URI=mongodb+srv://usuario:password@cluster0.tucluster.mongodb.net/comarcaventas?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://tuusuario:tucontraseña@cluster0.tuclusterreal.mongodb.net/comarcaventas?retryWrites=true&w=majority
 PORT=3000
